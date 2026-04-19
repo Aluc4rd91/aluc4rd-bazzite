@@ -1,9 +1,0 @@
-[copr:copr.fedorainfracloud.org:jetm:mediatek-mt7927-dkms]
-name=Copr repo for mediatek-mt7927-dkms owned by jetm
-baseurl=https://copr.fedorainfracloud.org
-type=rpm-md
-skip_if_unavailable=True
-gpgcheck=0
-enabled=1
-enabled_metadata=1
-sslverify=0
