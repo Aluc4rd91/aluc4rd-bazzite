@@ -17,15 +17,21 @@ modules:
 
   - type: containerfile
     snippets:
-      # 1. Firmware in den Unterordner kopieren
-      - COPY firmware/* /usr/lib/firmware/mediatek/mt7927/
-      
-      # 2. Firmware-Links DIREKT im Hauptordner /mediatek/ erstellen (wichtig!)
-      - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
-      - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
-      
-      # 3. Den Boot-Fix-Dienst einbauen
+      # 1. Wir legen die Dateien in den Hauptordner UND den Unterordner
+      - COPY firmware/* /usr/lib/firmware/mediatek/
+      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/
+      - RUN cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
+
+      # 2. Wir erstellen Symlinks für BEIDE Namens-Varianten (6639 und 7927)
+      # WLAN Links
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
+      # Bluetooth Links (Wichtig für das Gesamtmodul!)
+      - RUN ln -sf /usr/lib/firmware/mediatek/BT_RAM_CODE_MT6639_2_1_hdr.bin /usr/lib/firmware/mediatek/BT_RAM_CODE_MT7927_1_1_hdr.bin
+
+      # 3. Boot-Fix-Dienst (Wir lassen ihn drin, er greift erst wenn Firmware passt)
       - COPY mt7927-fix.sh /usr/bin/mt7927-fix
       - RUN chmod +x /usr/bin/mt7927-fix
       - RUN printf "[Unit]\nDescription=MT7927 Fix\nAfter=local-fs.target\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/mt7927-fix\n\n[Install]\nWantedBy=multi-user.target\n" > /usr/lib/systemd/system/mt7927-fix.service
       - RUN systemctl enable mt7927-fix.service
+
