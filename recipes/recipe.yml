@@ -24,6 +24,7 @@ modules:
       # 2. Den Störenfried mt7921e VERBANNEN und mt7925e vorbereiten
       - |
         RUN printf "blacklist mt7921e\ninstall mt7921e /bin/false\noptions mt7925e dyndbg=+p\n" > /etc/modprobe.d/mt7927-fix.conf
+      - RUN printf 'options mt7925e dev_id=0x14c3,0x7927\n' > /etc/modprobe.d/mt7927-id.conf
 
       # 3. Die UDEV-Regel für den harten Bind (ohne Ausreden)
       - COPY 99-mt7927.rules /usr/lib/udev/rules.d/99-mt7927.rules
