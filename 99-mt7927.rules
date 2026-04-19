@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x14c3", ATTR{device}=="0x7927", RUN+="/usr/sbin/modprobe mt7925e", RUN+="/usr/sbin/modprobe btusb", RUN+="/bin/sh -c 'echo 14c3 7927 > /sys/bus/pci/drivers/mt7925e/new_id'"
