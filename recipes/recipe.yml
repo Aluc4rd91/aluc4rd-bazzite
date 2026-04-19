@@ -1,6 +1,6 @@
 ---
 # yaml-language-server: $schema=https://blue-build.org
-name: mein-bazzite-ace
+name: aluc4rd-bazzite
 description: Stabiles Bazzite mit automatischer MT7927 Treiber-Integration (Jetm Upstream)
 
 # Das offizielle, stabile Fundament von ublue-os
