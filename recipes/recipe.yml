@@ -17,11 +17,11 @@ modules:
 
   - type: containerfile
     snippets:
-      # 1. Firmware an alle Orte (wie gehabt)
+      # 1. Firmware-Links (Samutoljamo-Weg)
       - COPY firmware/* /usr/lib/firmware/mediatek/
-      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/ && cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
-
-      # 2. Den Treiber von JETM direkt klonen und registrieren
-      - RUN git clone https://github.com/jetm/mediatek-mt7927-dkms.git /tmp/mt7927
-      - RUN cp -r /tmp/mt7927 /usr/src/mediatek-mt7927-2.11
-      - RUN dkms add -m mediatek-mt7927 -v 2.11
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
+      
+      # 2. Den Treiber zwingen, deine Hardware-ID (14c3 7927) beim Start zu registrieren
+      # Wir schreiben dies direkt in die Modul-Optionen
+      - RUN printf "options mt7925e dyndbg=+p\ninstall mt7925e /usr/sbin/modprobe --ignore-install mt7925e; /usr/bin/sh -c 'echo 14c3 7927 > /sys/bus/pci/drivers/mt7925e/new_id'\n" > /etc/modprobe.d/mt7927.conf
