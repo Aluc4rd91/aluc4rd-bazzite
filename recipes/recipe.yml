@@ -17,14 +17,13 @@ modules:
 
   - type: containerfile
     snippets:
-      # 1. Wir löschen die (vielleicht inkompatible) Standard-Firmware von Fedora
-      - RUN rm -rf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
-      - RUN rm -rf /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
-      
-      # 2. Wir setzen deine stabilen Dateien als "echte" Systemdateien ein
-      - COPY firmware/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
-      - COPY firmware/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
-      - COPY firmware/BT_RAM_CODE_MT6639_2_1_hdr.bin /usr/lib/firmware/mediatek/BT_RAM_CODE_MT7927_1_1_hdr.bin
+      # 1. Firmware an alle Orte verteilen (wie Samutoljamo)
+      - COPY firmware/* /usr/lib/firmware/mediatek/
+      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/
+      - RUN cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # 3. Wir erzwingen das Laden des Treibers über die UDEV-Regeln (sehr mächtig!)
-      - RUN printf 'ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x14c3", ATTR{device}=="0x7927", RUN+="/usr/sbin/modprobe mt7925e", RUN+="/usr/bin/bash -c \"echo 14c3 7927 > /sys/bus/pci/drivers/mt7925e/new_id\""' > /usr/lib/udev/rules.d/99-mt7927.rules
+      # 2. Die UDEV-Regel FIXEN (kein Verschachteln von Anführungszeichen mehr)
+      - |
+        RUN printf 'ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x14c3", ATTR{device}=="0x7927", RUN+="/usr/sbin/modprobe mt7925e", RUN+="/usr/bin/sh -c \"echo 14c3 7927 > /sys/bus/pci/drivers/mt7925e/new_id\""\n' > /usr/lib/udev/rules.d/99-mt7927.rules
