@@ -5,7 +5,7 @@ description: Stabiles Bazzite mit automatischer MT7927 Treiber-Integration (Jetm
 
 # Das offizielle, stabile Fundament von ublue-os
 base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia
-image-version: 43
+image-version: latest
 
 modules:
   # Zuerst installieren wir die Werkzeuge, damit sie für spätere Schritte bereitstehen
