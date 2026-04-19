@@ -17,12 +17,14 @@ modules:
 
   - type: containerfile
     snippets:
-      # Firmware mit den EXAKTEN Namen für den mt7925e Treiber
+      # 1. Firmware in den Unterordner kopieren
       - COPY firmware/* /usr/lib/firmware/mediatek/mt7927/
-      - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT7927_1_1.bin
-      - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/WIFI_MT7927_patch_mcu_1_1_hdr.bin
       
-      # Den Boot-Fix einbauen
+      # 2. Firmware-Links DIREKT im Hauptordner /mediatek/ erstellen (wichtig!)
+      - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
+      - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
+      
+      # 3. Den Boot-Fix-Dienst einbauen
       - COPY mt7927-fix.sh /usr/bin/mt7927-fix
       - RUN chmod +x /usr/bin/mt7927-fix
       - RUN printf "[Unit]\nDescription=MT7927 Fix\nAfter=local-fs.target\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/mt7927-fix\n\n[Install]\nWantedBy=multi-user.target\n" > /usr/lib/systemd/system/mt7927-fix.service
