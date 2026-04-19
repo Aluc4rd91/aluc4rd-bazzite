@@ -8,15 +8,22 @@ base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia
 image-version: 43
 
 modules:
+  # Zuerst installieren wir die Werkzeuge, damit sie für spätere Schritte bereitstehen
+  - type: rpm-ostree
+    install:
+      - dkms
+      - kernel-devel
+      - kernel-headers
+
   - type: containerfile
     snippets:
-      # 1. Firmware wie gehabt (Samutoljamo-Logik)
+      # 1. Firmware kopieren (Samutoljamo-Logik)
       - COPY firmware/* /usr/lib/firmware/mediatek/mt7927/
       - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/mt7927/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # 2. Den Treiber direkt von GitHub laden und registrieren
+      # 2. Treiber von GitHub klonen und registrieren
       - RUN git clone https://github.com/jetm/mediatek-mt7927-dkms.git /tmp/mt7927
       - RUN cp -r /tmp/mt7927 /usr/src/mediatek-mt7927-2.11
-      # Wir sagen dem System, dass dieser Ordner ein Treiber ist
+      # Da dkms jetzt oben installiert wurde, funktioniert dieser Befehl nun:
       - RUN dkms add -m mediatek-mt7927 -v 2.11
