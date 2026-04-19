@@ -17,13 +17,9 @@ modules:
 
   - type: containerfile
     snippets:
-      # 1. Firmware an alle Orte verteilen (wie Samutoljamo)
+      # 1. Firmware wie bisher
       - COPY firmware/* /usr/lib/firmware/mediatek/
-      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/
-      - RUN cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
-      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
-      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
-
-      # 2. Die UDEV-Regel FIXEN (kein Verschachteln von Anführungszeichen mehr)
-      - |
-        RUN printf 'ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x14c3", ATTR{device}=="0x7927", RUN+="/usr/sbin/modprobe mt7925e", RUN+="/usr/bin/sh -c \"echo 14c3 7927 > /sys/bus/pci/drivers/mt7925e/new_id\""\n' > /usr/lib/udev/rules.d/99-mt7927.rules
+      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/ && cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
+      
+      # 2. Die UDEV-Regel DIREKT aus deinem Repo kopieren
+      - COPY 99-mt7927.rules /usr/lib/udev/rules.d/99-mt7927.rules
