@@ -17,9 +17,20 @@ modules:
 
   - type: containerfile
     snippets:
-      # 1. Firmware wie bisher
+      # 1. Firmware kopieren
       - COPY firmware/* /usr/lib/firmware/mediatek/
-      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/ && cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
+      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/
       
-      # 2. Die UDEV-Regel DIREKT aus deinem Repo kopieren
+      # 2. Wir erstellen JEDE denkbare Namens-Kombination für Kernel 6.17
+      - |
+        RUN cd /usr/lib/firmware/mediatek && \
+        ln -sf WIFI_RAM_CODE_MT6639_2_1.bin WIFI_RAM_CODE_MT7927_1_1.bin && \
+        ln -sf WIFI_RAM_CODE_MT6639_2_1.bin WIFI_RAM_CODE_MT7927.bin && \
+        ln -sf WIFI_MT6639_PATCH_MCU_2_1_hdr.bin WIFI_MT7927_patch_mcu_1_1_hdr.bin && \
+        ln -sf WIFI_MT6639_PATCH_MCU_2_1_hdr.bin WIFI_MT7927_patch_mcu.bin && \
+        ln -sf BT_RAM_CODE_MT6639_2_1_hdr.bin BT_RAM_CODE_MT7927_1_1_hdr.bin && \
+        ln -sf BT_RAM_CODE_MT6639_2_1_hdr.bin BT_RAM_CODE_MT7927.bin && \
+        cp *.bin mt7927/
+      
+      # 3. UDEV-Regel aus dem Repo kopieren
       - COPY 99-mt7927.rules /usr/lib/udev/rules.d/99-mt7927.rules
