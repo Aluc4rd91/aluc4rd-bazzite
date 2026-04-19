@@ -3,7 +3,7 @@
 name: mein-bazzite-ace
 description: Echtes Bazzite mit nativem MediaTek Wi-Fi 7 Support
 base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia
-image-version: 41 # Wir gehen auf die stabile Version 41 für volle Kompatibilität
+image-version: 43
 
 modules:
   - type: files
@@ -11,22 +11,17 @@ modules:
       - source: system
         destination: /
 
-  # Hier binden wir die Firmware ein, die du bereits hast
   - type: containerfile
     snippets:
-      - COPY firmware/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT7927_1_1.bin
-      - COPY firmware/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/WIFI_MT7927_patch_mcu_1_1_hdr.bin
-      - COPY firmware/BT_RAM_CODE_MT6639_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/BT_RAM_CODE_MT6639_2_1_hdr.bin
+      # Wir holen uns die Firmware-Dateien und die Logik direkt von samutoljamo
+      - COPY firmware/* /usr/lib/firmware/mediatek/mt7927/
+      # Wir setzen die Symlinks genau so, wie samutoljamo es in seinem Projekt vorsieht
+      - RUN ln -s /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT7927_1_1.bin
+      - RUN ln -s /usr/lib/firmware/mediatek/mt7927/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-  # Wir nutzen das offizielle RPM-OSTREE Modul für den Treiber von jetm, 
-  # aber im Bazzite-Kontext
+  # Integration des Treibers über das offizielle Repo
   - type: rpm-ostree
     repos:
-      - https://fedorainfracloud.org
+      - https://copr.fedorainfracloud.org/coprs/ublue-os/bazzite/repo/fedora-43/ublue-os-bazzite-fedora-43.repo
     install:
       - mediatek-mt7927-dkms
-
-  - type: firstboot
-    notify: true
-    setup-commands:
-      - /usr/bin/bazzite-setup
