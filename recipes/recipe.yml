@@ -24,7 +24,7 @@ modules:
 
       # 2. Den Code direkt laden und per DKMS "backen"
       - |
-        RUN git clone --depth 1 https://github.com /usr/src/mt76-1.0 && \
+        RUN git clone --depth 1 https://github.com/openwrt/mt76.git /usr/src/mt76-1.0 && \
         printf "PACKAGE_NAME=\"mt76\"\nPACKAGE_VERSION=\"1.0\"\nBUILT_MODULE_NAME[0]=\"mt7925e\"\nDEST_MODULE_LOCATION[0]=\"/extra\"\nAUTOINSTALL=\"yes\"" > /usr/src/mt76-1.0/dkms.conf && \
         dkms add -m mt76 -v 1.0 && \
         dkms build -m mt76 -v 1.0 && \
