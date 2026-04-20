@@ -8,25 +8,17 @@ base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia
 image-version: latest
 
 modules:
-  - type: rpm-ostree
-    install:
-      - dkms
-      - kernel-devel
-      - kernel-headers
-      - git
-
   - type: containerfile
     snippets:
-      # 1. Firmware-Vorbereitung (unverändert)
+      # 1. Firmware an alle denkbaren Orte kopieren
       - COPY firmware/* /usr/lib/firmware/mediatek/
+      - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/ && cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
+      
+      # 2. Symlinks für die Namen erstellen, die Kernel 6.17 sucht
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
+      - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # 2. Den Code laden, dkms.conf schreiben und gezielt für den Image-Kernel bauen
-      - |
-        RUN git clone --depth 1 https://github.com/openwrt/mt76.git /usr/src/mt76-1.0 && \
-        printf "PACKAGE_NAME=\"mt76\"\nPACKAGE_VERSION=\"1.0\"\nBUILT_MODULE_NAME[0]=\"mt7925e\"\nDEST_MODULE_LOCATION[0]=\"/extra\"\nAUTOINSTALL=\"yes\"" > /usr/src/mt76-1.0/dkms.conf && \
-        export KERNEL_VER=$(ls /lib/modules | head -n 1) && \
-        dkms add -m mt76 -v 1.0 && \
-        dkms build -m mt76 -v 1.0 -k $KERNEL_VER && \
-        dkms install -m mt76 -v 1.0 -k $KERNEL_VER
+      # 3. Die UDEV-Regel DIREKT aus deinem Repo kopieren (stelle sicher, dass die Datei existiert!)
+      - COPY 99-mt7927.rules /usr/lib/udev/rules.d/99-mt7927.rules
