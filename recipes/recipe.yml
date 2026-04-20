@@ -22,13 +22,14 @@ modules:
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # 2. Den Treiber-Quellcode REKURSIV klonen (lädt mt76 mit)
-      - RUN git clone --recursive https://github.com/jetm/mediatek-mt7927-dkms.git /tmp/driver
+      # 2. Den mt76 Quellcode DIREKT klonen (verhindert Submodul-Fehler)
+      - RUN git clone https://github.com/openwrt/mt76.git /tmp/mt76
       
       # 3. Kompilieren und Installieren
       - |
-        RUN cd /tmp/driver/mt76 && \
-        make -C /lib/modules/$(uname -r)/build M=$(pwd) modules && \
+        RUN cd /tmp/mt76 && \
+        make -C /lib/modules/$(uname -r)/build M=$(pwd) CONFIG_MT7925E=m modules && \
         mkdir -p /lib/modules/$(uname -r)/extra && \
         cp mt7925/mt7925e.ko /lib/modules/$(uname -r)/extra/mt7925e.ko && \
         depmod -a $(uname -r)
+
