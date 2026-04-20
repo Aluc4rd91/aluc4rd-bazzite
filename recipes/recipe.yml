@@ -13,18 +13,19 @@ modules:
       - dkms
       - kernel-devel
       - kernel-headers
+      - git
 
   - type: containerfile
     snippets:
-      # Firmware-Vorbereitung (funktioniert bereits)
+      # 1. Firmware-Vorbereitung (wie bisher)
       - COPY firmware/* /usr/lib/firmware/mediatek/
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # Den Treiber-Quellcode aus deinem Repository ins Image kopieren
-      - COPY mt76/ /usr/src/mt76-1.0/
-      
-      # Den Treiber registrieren (Blue-Build/DKMS übernimmt den Rest)
-      - RUN dkms add -m mt76 -v 1.0
-      - RUN dkms build -m mt76 -v 1.0
-      - RUN dkms install -m mt76 -v 1.0
+      # 2. Den Code direkt laden und per DKMS "backen"
+      - |
+        RUN git clone --depth 1 https://github.com /usr/src/mt76-1.0 && \
+        printf "PACKAGE_NAME=\"mt76\"\nPACKAGE_VERSION=\"1.0\"\nBUILT_MODULE_NAME[0]=\"mt7925e\"\nDEST_MODULE_LOCATION[0]=\"/extra\"\nAUTOINSTALL=\"yes\"" > /usr/src/mt76-1.0/dkms.conf && \
+        dkms add -m mt76 -v 1.0 && \
+        dkms build -m mt76 -v 1.0 && \
+        dkms install -m mt76 -v 1.0
