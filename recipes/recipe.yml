@@ -8,7 +8,6 @@ base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia
 image-version: latest
 
 modules:
-  # Zuerst installieren wir die Werkzeuge, damit sie für spätere Schritte bereitstehen
   - type: rpm-ostree
     install:
       - dkms
@@ -17,19 +16,15 @@ modules:
 
   - type: containerfile
     snippets:
-      # 1. Firmware wie gehabt
+      # Firmware-Vorbereitung (funktioniert bereits)
       - COPY firmware/* /usr/lib/firmware/mediatek/
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # 2. Den mt76 Quellcode DIREKT klonen
-      - RUN git clone https://github.com/openwrt/mt76.git /tmp/mt76
+      # Den Treiber-Quellcode aus deinem Repository ins Image kopieren
+      - COPY mt76/ /usr/src/mt76-1.0/
       
-      # 3. Kompilieren mit dem korrekten Pfad aus dem Image
-      - |
-        RUN export KERNEL_VER=$(ls /lib/modules | head -n 1) && \
-        cd /tmp/mt76 && \
-        make -C /lib/modules/$KERNEL_VER/build M=$(pwd) CONFIG_MT7925E=m modules && \
-        mkdir -p /lib/modules/$KERNEL_VER/extra && \
-        cp mt7925/mt7925e.ko /lib/modules/$KERNEL_VER/extra/mt7925e.ko && \
-        depmod -a $KERNEL_VER
+      # Den Treiber registrieren (Blue-Build/DKMS übernimmt den Rest)
+      - RUN dkms add -m mt76 -v 1.0
+      - RUN dkms build -m mt76 -v 1.0
+      - RUN dkms install -m mt76 -v 1.0
