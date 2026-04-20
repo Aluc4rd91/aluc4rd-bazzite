@@ -10,15 +10,19 @@ image-version: latest
 modules:
   - type: containerfile
     snippets:
-      # 1. Firmware an alle denkbaren Orte kopieren
+      # 1. Dateien kopieren
       - COPY firmware/* /usr/lib/firmware/mediatek/
       - RUN mkdir -p /usr/lib/firmware/mediatek/mt7927/ && cp /usr/lib/firmware/mediatek/*.bin /usr/lib/firmware/mediatek/mt7927/
       
-      # 2. Symlinks für die Namen erstellen, die Kernel 6.17 sucht
+      # 2. Die Symlinks (Deine Brücke) - UNBEDINGT BEHALTEN
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_RAM_CODE_MT6639_2_1.bin /usr/lib/firmware/mediatek/mt7927/WIFI_RAM_CODE_MT7927_1_1.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/WIFI_MT7927_patch_mcu_1_1_hdr.bin
       - RUN ln -sf /usr/lib/firmware/mediatek/WIFI_MT6639_PATCH_MCU_2_1_hdr.bin /usr/lib/firmware/mediatek/mt7927/WIFI_MT7927_patch_mcu_1_1_hdr.bin
 
-      # 3. Die UDEV-Regel DIREKT aus deinem Repo kopieren (stelle sicher, dass die Datei existiert!)
+      # 3. ID-Zwang & Blacklist
+      - RUN printf "options mt7925e dev_id=0x14c3,0x7927\n" > /etc/modprobe.d/mt7927-id.conf
+      - RUN printf "blacklist mt7921e\ninstall mt7921e /bin/false\n" > /etc/modprobe.d/blacklist-mt7921e.conf
+
+      # 4. UDEV-Regel
       - COPY 99-mt7927.rules /usr/lib/udev/rules.d/99-mt7927.rules
